@@ -106,10 +106,12 @@ workflow.add_conditional_edges(
 
 graph_executor = workflow.compile()
 
-if __name__ == "__main__":
-    with open("../../Sample Data/SampleData.txt", 'r') as f:
+
+def get_agent_result(file_path: str):
+    global case_study_text
+    with open(file_path, 'r') as f:
         case_study_text = f.read()
 
     result = graph_executor.invoke({})
 
-    print("\nGenerated Task Plan:\n", result["final_plan"])
+    return result["final_plan"]
