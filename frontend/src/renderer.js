@@ -1,57 +1,80 @@
-const axios = require('axios');
+// Function to fetch and log file review
+async function fetchFileReview() {
+  console.log(document.getElementById("file-path").value);
+  const filePath = document.getElementById("file-path").value;
+  try {
+    const response = await fetch(
+      `http://localhost:8000/review_file?file_path=${encodeURIComponent(
+        filePath
+      )}`
+    );
+    const data = await response.json();
 
-const API_BASE_URL = 'http://localhost:8000';  // Adjust this to match your FastAPI server address
+    // Extracting the markdown review content
+    const review = Object.values(data.review)[0]; // Get the first value from the review object
 
-async function reviewFile() {
-    const filePath = document.getElementById('file-path').value;
-    try {
-        const response = await axios.get(`${API_BASE_URL}/review_file`, {
-            params: { file_path: filePath }
-        });
-        document.getElementById('file-review-result').innerText = JSON.stringify(response.data, null, 2);
-    } catch (error) {
-        console.error('Error reviewing file:', error);
-        document.getElementById('file-review-result').innerText = 'Error reviewing file';
-    }
+    document.getElementById("file-review-result").innerHTML =
+      marked.parse(review);
+  } catch (error) {
+    console.error("Error fetching file review:", error);
+    document.getElementById("file-review-result").textContent =
+      "Error: " + error.message;
+  }
 }
 
-async function reviewFolder() {
-    const projectPath = document.getElementById('project-path').value;
-    const ignoreFiles = document.getElementById('ignore-files').value;
-    const fileExtensions = document.getElementById('file-extensions').value;
-    try {
-        const response = await axios.get(`${API_BASE_URL}/review_folder`, {
-            params: {
-                project_path: projectPath,
-                ignore_files: ignoreFiles,
-                file_extensions: fileExtensions
-            }
-        });
-        document.getElementById('folder-review-result').innerText = JSON.stringify(response.data, null, 2);
-    } catch (error) {
-        console.error('Error reviewing folder:', error);
-        document.getElementById('folder-review-result').innerText = 'Error reviewing folder';
-    }
+// Function to fetch and log folder review
+async function fetchFolderReview() {
+  const projectPath = document.getElementById("project-path").value;
+  const ignoreFiles = document.getElementById("ignore-files").value;
+  const fileExtensions = document.getElementById("file-extensions").value;
+  try {
+    const response = await fetch(
+      `http://localhost:8000/review_folder?project_path=${encodeURIComponent(
+        projectPath
+      )}&ignore_files=${encodeURIComponent(
+        ignoreFiles
+      )}&file_extensions=${encodeURIComponent(fileExtensions)}`
+    );
+    const data = await response.json();
+    console.log("Folder Review:", data);
+    document.getElementById("folder-review-result").textContent =
+      JSON.stringify(data, null, 2);
+  } catch (error) {
+    console.error("Error fetching folder review:", error);
+    document.getElementById("folder-review-result").textContent =
+      "Error: " + error.message;
+  }
 }
 
-async function fixBug() {
-    const filePath = document.getElementById('bug-file-path').value;
-    const errorMsg = document.getElementById('error-msg').value;
-    try {
-        const response = await axios.get(`${API_BASE_URL}/bug_fixer`, {
-            params: {
-                file_path: filePath,
-                error_msg: errorMsg
-            }
-        });
-        document.getElementById('bug-fixer-result').innerText = JSON.stringify(response.data, null, 2);
-    } catch (error) {
-        console.error('Error fixing bug:', error);
-        document.getElementById('bug-fixer-result').innerText = 'Error fixing bug';
-    }
+// Function to fetch and log bug fixer result
+async function fetchBugFixer() {
+  const filePath = document.getElementById("bug-file-path").value;
+  const errorMsg = document.getElementById("error-msg").value;
+  try {
+    const response = await fetch(
+      `http://localhost:8000/bug_fixer?file_path=${encodeURIComponent(
+        filePath
+      )}&error_msg=${encodeURIComponent(errorMsg)}`
+    );
+    const data = await response.json();
+    console.log("Bug Fixer Result:", data);
+    document.getElementById("bug-fixer-result").textContent = JSON.stringify(
+      data,
+      null,
+      2
+    );
+  } catch (error) {
+    console.error("Error fetching bug fixer result:", error);
+    document.getElementById("bug-fixer-result").textContent =
+      "Error: " + error.message;
+  }
 }
 
-// Expose functions to the global scope
-window.reviewFile = reviewFile;
-window.reviewFolder = reviewFolder;
-window.fixBug = fixBug;
+// Add event listeners to buttons
+document
+  .getElementById("review-file-btn")
+  .addEventListener("click", fetchFileReview);
+document
+  .getElementById("review-folder-btn")
+  .addEventListener("click", fetchFolderReview);
+document.getElementById("fix-bug-btn").addEventListener("click", fetchBugFixer);
